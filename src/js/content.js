@@ -1,29 +1,38 @@
 ;(function(window){
   "use strict";
-  var
-    win = window,
-    document = win.document,
-    tabId,
-    imgs,
-    imgsLength = 0,
 
-    $body = document.getElementsByTagName("body")[0],
+  // =======================================
+  // variables
+  // 
+  var win = window,
+      document = win.document,
+      imgsLength = 0,
+      $body = document.getElementsByTagName("body")[0],
 
-    modalBgName ="wlbImgChecker-modalBg",
-    $modalBg = document.getElementById( modalBgName ),
+      modalBgName ="__rntImgChecker-modalBg",
+      $modalBg = document.getElementById( modalBgName ),
 
-    containerName = "wlbImgChecker-imgContainer",
-    $imgContainer = document.getElementById( containerName ),
+      containerName = "__rntImgChecker-imgContainer",
+      $imgContainer = document.getElementById( containerName ),
 
-    mousePoint = {
-      x : 0,
-      y : 0
-    },
-    
-    $focus,
-    focusIndex = 0;
-
-  function init(){
+      mousePoint = {
+        x : 0,
+        y : 0
+      },      
+      $focus,
+      tabId,
+      imgs,
+      focusIndex = 0,
+      tempDiv = document.createElement("div"),
+      tempP = document.createElement("p"),
+      tempImg = document.createElement("img"),
+      tempSpan = document.createElement("span"),
+      enableDrag = true;
+      
+  // =======================================
+  // functions
+  // 
+  var init = function(){
     window.removeEventListener("resize", onWindowResize, false);
     window.addEventListener("resize", onWindowResize, false);
     
@@ -31,15 +40,14 @@
       $body.removeChild( $modalBg );
       $body.removeChild( $imgContainer );
       focusIndex = 0;
-    }
-    else {
+    } else {
       imgs = document.getElementsByTagName("img");
       imgsLength = imgs.length;
       setImgChecker();
     }
   };
 
-  function onWindowResize(){
+  var onWindowResize = function(){
     if( $modalBg || $imgContainer ){
       $body.removeChild( $modalBg );
       $body.removeChild( $imgContainer );
@@ -50,19 +58,17 @@
     setImgChecker();
   };
 
-  function setImgChecker(){
-    $modalBg = document.createElement("div");
+  var setImgChecker = function(){
+    var fragment = document.createDocumentFragment(),
+        i = -1;
+    $modalBg = tempDiv.cloneNode();
     $modalBg.setAttribute("id", modalBgName);
 
-    $imgContainer = document.createElement("div");
+    $imgContainer = tempDiv.cloneNode();
     $imgContainer.setAttribute("id", containerName);
 
     $body.appendChild( $modalBg );
     $body.appendChild( $imgContainer );
-
-    var
-      fragment = document.createDocumentFragment(),
-      i = -1;
     
     for( ; ++ i < imgsLength; ){
       fragment.appendChild( createChecker(i) );
@@ -70,7 +76,7 @@
     $imgContainer.appendChild( fragment );
   };
 
-  function onMouseDown(event){
+  var onMouseDown = function(event){
     event.preventDefault();
 
     mousePoint.x = event.layerX;
@@ -85,7 +91,7 @@
     return false;
   };
 
-  function onMouseUp(event){
+  var onMouseUp = function(event){
     event.preventDefault();
     document.removeEventListener("mousemove", onMouseMove, false);
     document.removeEventListener("mouseup", onMouseUp, false);
@@ -93,116 +99,149 @@
     return false;
   };
 
-  function onMouseMove(event){
+  var onMouseMove = function(event){
     event.preventDefault();
 
     if( /onClose/.test( $focus.className ) ){
       return false;
     }
+    // if( enableDrag ){
     $focus.style.left = event.pageX - mousePoint.x + "px";
     $focus.style.top = event.pageY - mousePoint.y + "px";
+    // }
 
     return false;
   };
 
-  function onMouseEnter(event){
+  var onMouseEnter = function(event){
     event.preventDefault();
 
-    var
-      hitArea = event.currentTarget.querySelector(".hitArea"),
-      overlayImage = event.currentTarget.querySelector(".overlayImage"),
-      imgDetail = event.currentTarget.querySelector(".img-detail");
+    var hitArea = event.currentTarget.querySelector(".hitArea"),
+        overlayImage = event.currentTarget.querySelector(".overlayImage"),
+        imgDetail = event.currentTarget.querySelector(".img-detail");
+
+    // enableDrag = true;
 
     hitArea.style.width = overlayImage.offsetWidth + imgDetail.offsetWidth + 7 + "px";
-    hitArea.style.height = (overlayImage.offsetHeight > imgDetail.offsetHeight? overlayImage.offsetHeight : imgDetail.offsetHeight) + "px";
+    hitArea.style.height = (overlayImage.offsetHeight > imgDetail.offsetHeight ? overlayImage.offsetHeight : imgDetail.offsetHeight) + "px";
   };
 
-  function onMouseOut(event){
+  var onMouseOut = function(event){
     event.preventDefault();
 
     var hitArea = event.currentTarget.querySelector(".hitArea");
 
     hitArea.style.width = "0px";
     hitArea.style.height = "0px";
+
+    // enableDrag = false;
+
   };
 
-  function onCloseClick( div ){
+  var onCloseClick = function( div ){
     return function(event){
       event.preventDefault();
       div.parentNode.removeChild( div );
     }
   };
 
-  function onCloseOut( div ){
+  var onCloseOut = function( div ){
     return function(event){
       event.preventDefault();
 
-      var className = div.className.replace( " onClose", "" );
+      var className = div.className.replace( /\s*onClose/g, "" );
 
       div.className = className;
+      // enableDrag = true;
     }
-  }
+  };
 
-  function onCloseOver( div ){
+  // var onAltMouseEnter = function(event){
+  //   enableDrag = false;
+  // };
+
+  // var onAltMouseLeave = function(event){
+  //   enableDrag = true;
+  // };
+
+  var onCloseOver = function( div ){
     return function(event){
       event.preventDefault();
       var className = div.className;
-      className += " onClose";
+      className = className === "" ? "onClose" : className + " className";
       div.className = className;
+      // enableDrag = false;
     }
   }
 
-  function createChecker( index ){
-    var fragment = document.createDocumentFragment();
+  var createChecker = function( index ){
+    var fragment = document.createDocumentFragment(),
+        div = tempDiv.cloneNode(),
+        imgDetail = tempDiv.cloneNode(),
+        closeBtn = tempSpan.cloneNode(),
+        txt = "",
+        img = tempImg.cloneNode(),
+        hitArea = tempDiv.cloneNode(),
+        attrWidth,
+        attrHeight,
+        alt = tempP.cloneNode();
 
-    var div = document.createElement("div");
+    // div
     div.className = "img-container";
     div.style.position = "absolute";
     div.style.top = imgs[index].y + "px";
     div.style.left = imgs[index].x + "px";
 
-    var imgDetail = document.createElement("div");
+    // imgDetal
     imgDetail.className = "img-detail";
     imgDetail.style.top = 0;
     imgDetail.style.left = imgs[index].width + 7 + "px";
 
-    var closeBtn = document.createElement("span");
+    // closeBtn
     closeBtn.className = "close";
-    closeBtn.style.left = imgs[index].width + 130 + "px";
+    closeBtn.style.left = imgs[index].width + 120 + "px";
     closeBtn.innerHTML = "✕";
 
-    var
-      attrWidth = /\%$/.test(imgs[index].getAttribute("width"))? imgs[index].getAttribute("width") : parseInt(imgs[index].getAttribute("width")),
-      attrHeight = /\%$/.test(imgs[index].getAttribute("height"))? imgs[index].getAttribute("height") : parseInt(imgs[index].getAttribute("height"));
 
+    // attrWidth
+    attrWidth = imgs[index].getAttribute("width");
+    attrWidth = /^[0-9]+\%$/.test(attrWidth)? attrWidth : parseInt(attrWidth, 10);
 
-    var txt =
-      (attrWidth !== imgs[index].naturalWidth? '<p class="width-size defference">[width] : ' : '<p class="width-size">[width] : ') +
-      attrWidth + '<br>(<strong>original:' + imgs[index].naturalWidth + '</strong>)</p>' +
-      (attrHeight !== imgs[index].naturalHeight? '<p class="height-size defference">[height] : ' : '<p class="height-size">[height] : ') +
-      attrHeight + '<br>(<strong>original:' + imgs[index].naturalHeight + '</strong>)</p>' +
-      '<p class="alt">[alt]<br>' + imgs[index].alt + '</p>';
+    // attrHeight
+    attrHeight = imgs[index].getAttribute("height");
+    attrHeight = /^[0-9]+\%$/.test(attrHeight)? attrHeight : parseInt(attrHeight, 10);
+
+    // txt
+    txt += attrWidth !== imgs[index].naturalWidth ? '<p class="width-size defference">[width] : ' : '<p class="width-size">[width] : ';
+    txt += attrWidth + '<br>(<strong>original:' + imgs[index].naturalWidth + '</strong>)</p>';
+    txt += attrHeight !== imgs[index].naturalHeight ? '<p class="height-size defference">[height] : ' : '<p class="height-size">[height] : ';
+    txt += attrHeight + '<br>(<strong>original:' + imgs[index].naturalHeight + '</strong>)</p>';
+    txt += '<p class="alt">[alt]<br>' + imgs[index].alt + '</p>';
+
+    // alt.className = "alt";
+    // alt.innerHTML = '[alt]<br>' + imgs[index].alt;
 
     if(attrWidth !== imgs[index].naturalWidth || attrHeight !== imgs[index].naturalHeight){
       div.className += " caution";
     }
 
     imgDetail.innerHTML = txt;
+    // imgDetail.appendChild(alt);
 
-    var img = document.createElement("img");
     img.src = imgs[index].src;
     img.width = imgs[index].width;
     img.height = imgs[index].height;
     img.className = "overlayImage";
 
-    var hitArea = document.createElement("div");
     hitArea.className = "hitArea";
-
 
     div.addEventListener("mousedown", onMouseDown, false);
     div.addEventListener("mouseup", onMouseUp, false);
     div.addEventListener("mouseover", onMouseEnter, false);
     div.addEventListener("mouseout", onMouseOut, false);
+
+    // alt.addEventListener("mouseover", onAltMouseEnter, false);
+    // alt.addEventListener("mouseleave", onAltMouseLeave, false);
 
     closeBtn.addEventListener("click", onCloseClick(div), false);
     closeBtn.addEventListener("mouseover", onCloseOver(div), false);

@@ -1,9 +1,9 @@
 {
-  "name": "'img'チェッカー",
+  "name": "Check <img>",
+  "description": "imgタグのチェックツールです。htmlに記述してある'width'、'height'属性の値と実際の画像のサイズが違う場合は文字が赤くなります。ドラッグできます。",
   "version": "0.8.0",
   "manifest_version": 2,
 
-  "description": "imgタグのチェックツールです。htmlに記述してある'width'、'height'属性の値と実際の画像のサイズが違う場合は文字が赤くなります。ドラッグできます。",
   "icons": {
     "16": "icon/icon16.png",
     "48": "icon/icon48.png",

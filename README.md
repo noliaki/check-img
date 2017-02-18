@@ -1,5 +1,7 @@
 # Check &lt;img&gt;
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/noliaki/check-img.svg)](https://greenkeeper.io/)
+
 画像をチェックするchrome拡張機能です。
 以下よりインストールしてください。
 
